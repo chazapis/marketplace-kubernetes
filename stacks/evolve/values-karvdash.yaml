@@ -1,0 +1,4 @@
+karvdash:
+  dockerRegistry: http://registry-docker-registry.registry.svc:5000
+  stateVolumeClaim: karvdash
+  djangoSecret: cCMlZiRnK1slMS1oNmVlMGdrbzcwbnpnXmFxehpxczdueXVqeWwkKWdzcilyMjAkNF8=

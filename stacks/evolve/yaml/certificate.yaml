@@ -1,0 +1,23 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ssl-certificate
+spec:
+  secretName: ssl-certificate
+  duration: 87600h
+  commonName: ${INGRESS_EXTERNAL_IP}.nip.io
+  dnsNames:
+  - "${INGRESS_EXTERNAL_IP}.nip.io"
+  - "*.${INGRESS_EXTERNAL_IP}.nip.io"
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  issuerRef:
+    name: selfsigned

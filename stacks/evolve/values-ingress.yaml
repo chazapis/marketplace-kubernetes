@@ -1,0 +1,5 @@
+controller:
+  extraArgs:
+    default-ssl-certificate: ingress/ssl-certificate
+  admissionWebhooks:
+    enabled: false
