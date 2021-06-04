@@ -73,6 +73,7 @@ EXTRA=""
 install_chart
 
 INGRESS_EXTERNAL_IP=`kubectl get services --namespace $NAMESPACE ingress-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+INGRESS_EXTERNAL_IP=${INGRESS_EXTERNAL_IP:-"127.0.0.1"}
 
 if kubectl -n $NAMESPACE get secret ssl-certificate; then
     :
@@ -126,6 +127,7 @@ else
       yaml="https://raw.githubusercontent.com/digitalocean/marketplace-kubernetes/master/stacks/evolve/yaml/state-volume.yaml"
     fi
 
+    kubectl create namespace $NAMESPACE
     kubectl -n $NAMESPACE apply -f $yaml
 fi
 

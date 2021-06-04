@@ -6,9 +6,10 @@ set -e
 # charts
 ################################################################################
 
-install_chart () {
+uninstall_chart () {
     helm uninstall "$STACK" \
-      --namespace "$NAMESPACE"
+      --namespace "$NAMESPACE" \
+      || true
 }
 
 # registry
@@ -26,7 +27,7 @@ STACK="ingress"
 NAMESPACE="ingress"
 uninstall_chart
 
-kubectl -n ingress delete secret ssl-certificate
+kubectl -n $NAMESPACE delete secret ssl-certificate || true
 
 # minio
 STACK="minio"
@@ -34,7 +35,7 @@ NAMESPACE="minio"
 uninstall_chart
 
 # datashim
-kubectl delete -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml
+kubectl delete -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml || true
 
 # karvdash
 STACK="karvdash"
