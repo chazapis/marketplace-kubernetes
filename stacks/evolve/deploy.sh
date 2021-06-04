@@ -62,6 +62,7 @@ NAMESPACE="cert-manager"
 VALUES="values-$STACK.yaml"
 EXTRA=""
 install_chart
+sleep 5 # wait for startup
 
 # ingress
 STACK="ingress"
@@ -73,7 +74,11 @@ EXTRA=""
 install_chart
 
 INGRESS_EXTERNAL_IP=`kubectl get services --namespace $NAMESPACE ingress-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}'`
-INGRESS_EXTERNAL_IP=${INGRESS_EXTERNAL_IP:-"127.0.0.1"}
+# if [ -z "${MP_KUBERNETES}" ]; then
+#     INGRESS_EXTERNAL_IP=${INGRESS_EXTERNAL_IP:-"127.0.0.1"}
+# else
+#     exit 255
+# fi
 
 if kubectl -n $NAMESPACE get secret ssl-certificate; then
     :
@@ -110,10 +115,10 @@ kubectl wait --timeout=600s --for=condition=ready pods -l app.kubernetes.io/name
 # karvdash
 STACK="karvdash"
 CHART="karvdash/karvdash"
-CHART_VERSION="2.3.0"
+CHART_VERSION="2.3.1"
 NAMESPACE="karvdash"
 VALUES="values-$STACK.yaml"
-EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_IP}.nip.io --set karvdash.filesURL=minio://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio.minio.svc:5000/karvdash"
+EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_IP}.nip.io --set karvdash.filesURL=minio://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio.minio.svc:9000/karvdash"
 
 if kubectl -n karvdash get pvc karvdash-state-pvc; then
     :

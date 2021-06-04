@@ -12,14 +12,17 @@ uninstall_chart () {
       || true
 }
 
-# registry
-STACK="registry"
-NAMESPACE="registry"
+# karvdash
+STACK="karvdash"
+NAMESPACE="karvdash"
 uninstall_chart
 
-# cert-manager
-STACK="cert-manager"
-NAMESPACE="cert-manager"
+# datashim
+kubectl delete -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml || true
+
+# minio
+STACK="minio"
+NAMESPACE="minio"
 uninstall_chart
 
 # ingress
@@ -29,15 +32,12 @@ uninstall_chart
 
 kubectl -n $NAMESPACE delete secret ssl-certificate || true
 
-# minio
-STACK="minio"
-NAMESPACE="minio"
+# cert-manager
+STACK="cert-manager"
+NAMESPACE="cert-manager"
 uninstall_chart
 
-# datashim
-kubectl delete -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml || true
-
-# karvdash
-STACK="karvdash"
-NAMESPACE="karvdash"
+# registry
+STACK="registry"
+NAMESPACE="registry"
 uninstall_chart

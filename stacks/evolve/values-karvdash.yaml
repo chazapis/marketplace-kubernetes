@@ -1,5 +1,4 @@
 karvdash:
   stateVolumeClaim: karvdash-state-pvc
-  djangoSecret: cCMlZiRnK1slMS1oNmVlMGdrbzcwbnpnXmFxehpxczdueXVqeWwkKWdzcilyMjAkNF8=
   dockerRegistry: http://registry-docker-registry.registry.svc:5000
   datasetsAvailable: 1
