@@ -33,14 +33,16 @@ install_chart () {
     #   --install \
     #   --namespace \"$NAMESPACE\" \
     #   --values \"$values\" \
-    #   --version \"$CHART_VERSION\" $EXTRA"
+    #   --version \"$CHART_VERSION\" \
+    #   $EXTRA"
     helm upgrade "$STACK" "$CHART" \
       --atomic \
       --create-namespace \
       --install \
       --namespace "$NAMESPACE" \
       --values "$values" \
-      --version "$CHART_VERSION" "$EXTRA"
+      --version "$CHART_VERSION" \
+      $EXTRA
 }
 
 # registry
@@ -70,9 +72,9 @@ VALUES="values-$STACK.yaml"
 EXTRA=""
 install_chart
 
-INGRESS_EXTERNAL_IP=`kubectl get services --namespace ingress ingress-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+INGRESS_EXTERNAL_IP=`kubectl get services --namespace $NAMESPACE ingress-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}'`
 
-if kubectl -n ingress get secret ssl-certificate; then
+if kubectl -n $NAMESPACE get secret ssl-certificate; then
     :
 else
     if [ -z "${MP_KUBERNETES}" ]; then
@@ -81,10 +83,10 @@ else
       yaml="$ROOT_DIR/stacks/evolve/yaml/certificate.yaml"
     else
       # use github hosted master version
-      values="https://raw.githubusercontent.com/digitalocean/marketplace-kubernetes/master/stacks/evolve/yaml/certificate.yaml"
+      yaml="https://raw.githubusercontent.com/digitalocean/marketplace-kubernetes/master/stacks/evolve/yaml/certificate.yaml"
     fi
 
-    export $INGRESS_EXTERNAL_IP
+    export INGRESS_EXTERNAL_IP
     envsubst < $yaml | kubectl -n $NAMESPACE apply -f -
 fi
 
@@ -111,4 +113,20 @@ CHART_VERSION="2.3.0"
 NAMESPACE="karvdash"
 VALUES="values-$STACK.yaml"
 EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_IP}.nip.io --set karvdash.filesURL=minio://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio.minio.svc:5000/karvdash"
+
+if kubectl -n karvdash get pvc karvdash-state-pvc; then
+    :
+else
+    if [ -z "${MP_KUBERNETES}" ]; then
+      # use local version
+      ROOT_DIR=$(git rev-parse --show-toplevel)
+      yaml="$ROOT_DIR/stacks/evolve/yaml/state-volume.yaml"
+    else
+      # use github hosted master version
+      yaml="https://raw.githubusercontent.com/digitalocean/marketplace-kubernetes/master/stacks/evolve/yaml/state-volume.yaml"
+    fi
+
+    kubectl -n $NAMESPACE apply -f $yaml
+fi
+
 install_chart
