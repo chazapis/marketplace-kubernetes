@@ -79,6 +79,7 @@ EXTRA=""
 if kubectl -n $NAMESPACE get configmap nginx-custom-template; then
     :
 else
+    kubectl create namespace $NAMESPACE
     kubectl -n $NAMESPACE apply -f $(get_yaml yaml/ingress-configmap.yaml)
 fi
 
