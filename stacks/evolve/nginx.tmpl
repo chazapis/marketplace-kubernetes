@@ -767,15 +767,15 @@ stream {
         }
 
         {{ range $address := $all.Cfg.BindAddressIpv4 }}
-        listen                  {{ $address }}:{{ $tcpServer.Port }}{{ if $tcpServer.Backend.ProxyProtocol.Decode }} proxy_protocol{{ end }};
+        listen                  {{ $address }}:{{ $tcpServer.Port }}{{ if $tcpServer.Backend.ProxyProtocol.Decode }} proxy_protocol{{ end }} ssl;
         {{ else }}
-        listen                  {{ $tcpServer.Port }}{{ if $tcpServer.Backend.ProxyProtocol.Decode }} proxy_protocol{{ end }};
+        listen                  {{ $tcpServer.Port }}{{ if $tcpServer.Backend.ProxyProtocol.Decode }} proxy_protocol{{ end }} ssl;
         {{ end }}
         {{ if $IsIPV6Enabled }}
         {{ range $address := $all.Cfg.BindAddressIpv6 }}
-        listen                  {{ $address }}:{{ $tcpServer.Port }}{{ if $tcpServer.Backend.ProxyProtocol.Decode }} proxy_protocol{{ end }};
+        listen                  {{ $address }}:{{ $tcpServer.Port }}{{ if $tcpServer.Backend.ProxyProtocol.Decode }} proxy_protocol{{ end }} ssl;
         {{ else }}
-        listen                  [::]:{{ $tcpServer.Port }}{{ if $tcpServer.Backend.ProxyProtocol.Decode }} proxy_protocol{{ end }};
+        listen                  [::]:{{ $tcpServer.Port }}{{ if $tcpServer.Backend.ProxyProtocol.Decode }} proxy_protocol {{ end }} ssl;
         {{ end }}
         {{ end }}
         proxy_timeout           {{ $cfg.ProxyStreamTimeout }};
@@ -787,6 +787,18 @@ stream {
         {{ if $tcpServer.Backend.ProxyProtocol.Encode }}
         proxy_protocol          on;
         {{ end }}
+
+        ssl_protocols {{ $cfg.SSLProtocols }};
+        ssl_ciphers '{{ $cfg.SSLCiphers }}';
+        ssl_prefer_server_ciphers on;
+
+        # PEM sha: {{ $cfg.DefaultSSLCertificate.PemSHA }}
+        ssl_certificate     {{ $cfg.DefaultSSLCertificate.PemFileName }};
+        ssl_certificate_key {{ $cfg.DefaultSSLCertificate.PemFileName }};
+
+        ssl_session_cache     shared:SSL2:60m;
+        ssl_session_timeout   10h;
+        ssl_handshake_timeout 30s;
     }
     {{ end }}
 
