@@ -12,10 +12,9 @@ metadata:
 spec:
   secretName: ssl-certificate
   duration: 87600h
-  commonName: ${INGRESS_EXTERNAL_IP}.nip.io
+  commonName: ${INGRESS_EXTERNAL_IP}
   dnsNames:
-  - "${INGRESS_EXTERNAL_IP}.nip.io"
-  - "*.${INGRESS_EXTERNAL_IP}.nip.io"
+  - "${INGRESS_EXTERNAL_IP}"
   privateKey:
     algorithm: RSA
     size: 2048

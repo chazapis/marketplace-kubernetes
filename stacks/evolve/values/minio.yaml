@@ -1,6 +1,6 @@
 persistence:
   size: 10Gi
-  storageClass: do-block-storage
+  storageClass:
 resources:
   requests:
     memory:

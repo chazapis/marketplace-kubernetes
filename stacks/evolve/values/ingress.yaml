@@ -3,6 +3,9 @@ controller:
     default-ssl-certificate: ingress/ssl-certificate
   admissionWebhooks:
     enabled: false
+  customTemplate:
+    configMapName: nginx-custom-template
+    configMapKey: nginx.tmpl
 tcp:
   5000: registry/registry-docker-registry:5000
   9000: minio/minio:9000
