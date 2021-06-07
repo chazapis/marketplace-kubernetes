@@ -49,15 +49,6 @@ install_chart () {
       $EXTRA
 }
 
-# registry
-STACK="registry"
-CHART="twuni/docker-registry"
-CHART_VERSION="1.10.0"
-NAMESPACE="registry"
-VALUES="values/$STACK.yaml"
-EXTRA=""
-install_chart
-
 # cert-manager
 STACK="cert-manager"
 CHART="jetstack/cert-manager"
@@ -91,13 +82,23 @@ if [ -z "${MP_KUBERNETES}" ]; then
 else
     exit 255
 fi
+INGRESS_EXTERNAL_ADDRESS=${INGRESS_EXTERNAL_IP}.nip.io
 
 if kubectl -n $NAMESPACE get secret ssl-certificate; then
     :
 else
-    export INGRESS_EXTERNAL_IP
+    export INGRESS_EXTERNAL_ADDRESS
     envsubst < $(get_yaml yaml/ingress-certificate.yaml) | kubectl -n $NAMESPACE apply -f -
 fi
+
+# registry
+STACK="registry"
+CHART="twuni/docker-registry"
+CHART_VERSION="1.10.0"
+NAMESPACE="registry"
+VALUES="values/$STACK.yaml"
+EXTRA=""
+install_chart
 
 # minio
 STACK="minio"
@@ -121,7 +122,7 @@ CHART="karvdash/karvdash"
 CHART_VERSION="2.3.1"
 NAMESPACE="karvdash"
 VALUES="values/$STACK.yaml"
-EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_IP}.nip.io --set karvdash.filesURL=minio://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio.minio.svc:9000/karvdash"
+EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} --set karvdash.dockerRegistry=https://${INGRESS_EXTERNAL_ADDRESS}:5000 --set karvdash.filesURL=minios://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@${INGRESS_EXTERNAL_ADDRESS}:9000/karvdash"
 
 if kubectl -n karvdash get pvc karvdash-state-pvc; then
     :

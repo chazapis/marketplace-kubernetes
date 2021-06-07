@@ -1,9 +1,17 @@
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: selfsigned
+  name: letsencrypt
 spec:
-  selfSigned: {}
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@${INGRESS_EXTERNAL_ADDRESS}
+    privateKeySecretRef:
+      name: letsencrypt
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -12,11 +20,11 @@ metadata:
 spec:
   secretName: ssl-certificate
   duration: 87600h
-  commonName: ${INGRESS_EXTERNAL_IP}
+  commonName: ${INGRESS_EXTERNAL_ADDRESS}
   dnsNames:
-  - "${INGRESS_EXTERNAL_IP}"
+  - "${INGRESS_EXTERNAL_ADDRESS}"
   privateKey:
     algorithm: RSA
     size: 2048
   issuerRef:
-    name: selfsigned
+    name: letsencrypt

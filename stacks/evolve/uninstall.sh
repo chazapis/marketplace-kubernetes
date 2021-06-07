@@ -25,6 +25,11 @@ STACK="minio"
 NAMESPACE="minio"
 uninstall_chart
 
+# registry
+STACK="registry"
+NAMESPACE="registry"
+uninstall_chart
+
 # ingress
 STACK="ingress"
 NAMESPACE="ingress"
@@ -35,9 +40,4 @@ kubectl -n $NAMESPACE delete secret ssl-certificate || true
 # cert-manager
 STACK="cert-manager"
 NAMESPACE="cert-manager"
-uninstall_chart
-
-# registry
-STACK="registry"
-NAMESPACE="registry"
 uninstall_chart

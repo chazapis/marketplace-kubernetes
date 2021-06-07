@@ -1,4 +1,3 @@
 karvdash:
   stateVolumeClaim: karvdash-state-pvc
-  dockerRegistry: http://registry-docker-registry.registry.svc:5000
   datasetsAvailable: 1
