@@ -1,5 +1,5 @@
 apiVersion: cert-manager.io/v1
-kind: Issuer
+kind: ClusterIssuer
 metadata:
   name: letsencrypt
 spec:
@@ -28,3 +28,4 @@ spec:
     size: 2048
   issuerRef:
     name: letsencrypt
+    kind: ClusterIssuer

@@ -66,22 +66,9 @@ CHART_VERSION="3.19.0"
 NAMESPACE="ingress"
 VALUES="values/$STACK.yaml"
 EXTRA=""
-
-if kubectl -n $NAMESPACE get configmap nginx-custom-template; then
-    :
-else
-    kubectl create namespace $NAMESPACE
-    kubectl -n $NAMESPACE apply -f $(get_yaml yaml/ingress-configmap.yaml)
-fi
-
 install_chart
 
 INGRESS_EXTERNAL_IP=`kubectl get services --namespace $NAMESPACE ingress-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}'`
-if [ -z "${MP_KUBERNETES}" ]; then
-    INGRESS_EXTERNAL_IP=${INGRESS_EXTERNAL_IP:-"127.0.0.1"}
-else
-    exit 255
-fi
 INGRESS_EXTERNAL_ADDRESS=${INGRESS_EXTERNAL_IP}.nip.io
 
 if kubectl -n $NAMESPACE get secret ssl-certificate; then
@@ -97,7 +84,7 @@ CHART="twuni/docker-registry"
 CHART_VERSION="1.10.0"
 NAMESPACE="registry"
 VALUES="values/$STACK.yaml"
-EXTRA=""
+EXTRA="--set ingress.hosts[0]=registry.${INGRESS_EXTERNAL_ADDRESS} --set ingress.tls[0].hosts[0]=registry.${INGRESS_EXTERNAL_ADDRESS}"
 install_chart
 
 # minio
@@ -106,7 +93,7 @@ CHART="minio/minio"
 CHART_VERSION="8.0.10"
 NAMESPACE="minio"
 VALUES="values/$STACK.yaml"
-EXTRA=""
+EXTRA="--set ingress.hosts[0]=minio.${INGRESS_EXTERNAL_ADDRESS} --set ingress.tls[0].hosts[0]=minio.${INGRESS_EXTERNAL_ADDRESS}"
 install_chart
 
 MINIO_ACCESS_KEY=$(kubectl -n $NAMESPACE get secret minio -o jsonpath="{.data.accesskey}" | base64 --decode)
@@ -122,7 +109,7 @@ CHART="karvdash/karvdash"
 CHART_VERSION="2.3.1"
 NAMESPACE="karvdash"
 VALUES="values/$STACK.yaml"
-EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} --set karvdash.dockerRegistry=https://${INGRESS_EXTERNAL_ADDRESS}:5000 --set karvdash.filesURL=minios://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@${INGRESS_EXTERNAL_ADDRESS}:9000/karvdash"
+EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} --set karvdash.dockerRegistry=https://registry.${INGRESS_EXTERNAL_ADDRESS}:443 --set karvdash.filesURL=minios://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio.${INGRESS_EXTERNAL_ADDRESS}:443/karvdash"
 
 if kubectl -n karvdash get pvc karvdash-state-pvc; then
     :

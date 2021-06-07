@@ -1,3 +1,15 @@
+ingress:
+  enabled: true
+  hosts:
+    - minio.local
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "4096m"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+  tls:
+    - secretName: ssl-certificate
+      hosts:
+        - minio.local
 persistence:
   size: 10Gi
   storageClass:

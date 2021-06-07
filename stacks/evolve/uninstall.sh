@@ -10,6 +10,7 @@ uninstall_chart () {
     helm uninstall "$STACK" \
       --namespace "$NAMESPACE" \
       || true
+	kubectl delete namespace $NAMESPACE
 }
 
 # karvdash
@@ -34,8 +35,6 @@ uninstall_chart
 STACK="ingress"
 NAMESPACE="ingress"
 uninstall_chart
-
-kubectl -n $NAMESPACE delete secret ssl-certificate || true
 
 # cert-manager
 STACK="cert-manager"
