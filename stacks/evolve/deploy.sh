@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -e
+# set -x
 
 ################################################################################
 # repo
@@ -30,15 +31,6 @@ get_yaml () {
 }
 
 install_chart () {
-    # echo "helm upgrade \"$STACK\" \"$CHART\" \
-    #   --atomic \
-    #   --timeout 10m0s \
-    #   --create-namespace \
-    #   --install \
-    #   --namespace \"$NAMESPACE\" \
-    #   --values \"$(get_yaml $VALUES)\" \
-    #   --version \"$CHART_VERSION\" \
-    #   $EXTRA"
     helm upgrade "$STACK" "$CHART" \
       --atomic \
       --create-namespace \
@@ -95,7 +87,6 @@ CHART="twuni/docker-registry"
 CHART_VERSION="1.10.0"
 NAMESPACE="registry"
 VALUES="values/$STACK.yaml"
-EXTRA="--set ingress.hosts[0]=registry.${INGRESS_EXTERNAL_ADDRESS}"
 
 if kubectl -n $NAMESPACE get secret registry-credentials; then
     :
@@ -104,7 +95,6 @@ else
     kubectl apply -n $NAMESPACE -f yaml/registry-credentials.yaml
     kubectl wait --timeout=300s --for=condition=complete job/create-registry-credentials
 fi
-
 REGISTRY_USERNAME=$(kubectl -n $NAMESPACE get secret registry-credentials -o jsonpath="{.data.username}" | base64 --decode)
 REGISTRY_PASSWORD=$(kubectl -n $NAMESPACE get secret registry-credentials -o jsonpath="{.data.password}" | base64 --decode)
 
@@ -117,6 +107,9 @@ else
     kubectl apply -n $NAMESPACE -f yaml/registry-htpasswd.yaml
     kubectl wait --timeout=300s --for=condition=complete job/create-registry-htpasswd
 fi
+REGISTRY_HTPASSWD=$(kubectl -n $NAMESPACE get secret registry-htpasswd -o jsonpath="{.data.auth}" | base64 --decode)
+
+EXTRA="--set ingress.hosts[0]=registry.${INGRESS_EXTERNAL_ADDRESS} --set secrets.htpasswd='${REGISTRY_HTPASSWD}'"
 
 install_chart
 
@@ -139,10 +132,10 @@ kubectl wait --timeout=600s --for=condition=ready pods -l app.kubernetes.io/name
 # karvdash
 STACK="karvdash"
 CHART="karvdash/karvdash"
-CHART_VERSION="2.3.1"
+CHART_VERSION="2.4"
 NAMESPACE="karvdash"
 VALUES="values/$STACK.yaml"
-EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} --set karvdash.dockerRegistry=https://registry.${INGRESS_EXTERNAL_ADDRESS}:443 --set karvdash.filesURL=minios://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio.${INGRESS_EXTERNAL_ADDRESS}:443/karvdash"
+EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} --set karvdash.dockerRegistry=https://${REGISTRY_USERNAME}:${REGISTRY_PASSWORD}@registry.${INGRESS_EXTERNAL_ADDRESS}:443 --set karvdash.filesURL=minios://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio.${INGRESS_EXTERNAL_ADDRESS}:443/karvdash"
 
 if kubectl -n karvdash get pvc karvdash-state-pvc; then
     :
