@@ -93,7 +93,7 @@ if kubectl -n $NAMESPACE get secret registry-credentials; then
 else
     kubectl create namespace $NAMESPACE || true
     kubectl apply -n $NAMESPACE -f yaml/registry-credentials.yaml
-    kubectl wait --timeout=300s --for=condition=complete job/create-registry-credentials
+    kubectl wait -n $NAMESPACE --timeout=300s --for=condition=complete job/create-registry-credentials
 fi
 REGISTRY_USERNAME=$(kubectl -n $NAMESPACE get secret registry-credentials -o jsonpath="{.data.username}" | base64 --decode)
 REGISTRY_PASSWORD=$(kubectl -n $NAMESPACE get secret registry-credentials -o jsonpath="{.data.password}" | base64 --decode)
@@ -102,14 +102,15 @@ if kubectl -n $NAMESPACE get secret registry-htpasswd; then
     :
 else
     kubectl create namespace $NAMESPACE || true
+    export NAMESPACE
     export REGISTRY_USERNAME
     export REGISTRY_PASSWORD
-    kubectl apply -n $NAMESPACE -f yaml/registry-htpasswd.yaml
-    kubectl wait --timeout=300s --for=condition=complete job/create-registry-htpasswd
+    envsubst < $(get_yaml yaml/registry-htpasswd.yaml) | kubectl -n $NAMESPACE apply -f -
+    kubectl wait -n $NAMESPACE --timeout=300s --for=condition=complete job/create-registry-htpasswd
 fi
 REGISTRY_HTPASSWD=$(kubectl -n $NAMESPACE get secret registry-htpasswd -o jsonpath="{.data.auth}" | base64 --decode)
 
-EXTRA="--set ingress.hosts[0]=registry.${INGRESS_EXTERNAL_ADDRESS} --set secrets.htpasswd='${REGISTRY_HTPASSWD}'"
+EXTRA="--set ingress.hosts[0]=registry.${INGRESS_EXTERNAL_ADDRESS} --set-string secrets.htpasswd=${REGISTRY_HTPASSWD}"
 
 install_chart
 
