@@ -33,7 +33,7 @@ uninstall_chart
 
 # ingress
 STACK="ingress"
-NAMESPACE="ingress"
+NAMESPACE="ingress-nginx"
 uninstall_chart
 
 # cert-manager

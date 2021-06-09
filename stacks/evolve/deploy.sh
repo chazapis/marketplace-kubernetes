@@ -63,7 +63,7 @@ sleep 5 # wait for startup
 STACK="ingress"
 CHART="ingress-nginx/ingress-nginx"
 CHART_VERSION="3.19.0"
-NAMESPACE="ingress"
+NAMESPACE="ingress-nginx"
 VALUES="values/$STACK.yaml"
 EXTRA=""
 install_chart
@@ -84,7 +84,7 @@ CHART="twuni/docker-registry"
 CHART_VERSION="1.10.0"
 NAMESPACE="registry"
 VALUES="values/$STACK.yaml"
-EXTRA="--set ingress.hosts[0]=registry.${INGRESS_EXTERNAL_ADDRESS} --set ingress.tls[0].hosts[0]=registry.${INGRESS_EXTERNAL_ADDRESS}"
+EXTRA=""
 install_chart
 
 # minio
@@ -93,7 +93,7 @@ CHART="minio/minio"
 CHART_VERSION="8.0.10"
 NAMESPACE="minio"
 VALUES="values/$STACK.yaml"
-EXTRA="--set ingress.hosts[0]=minio.${INGRESS_EXTERNAL_ADDRESS} --set ingress.tls[0].hosts[0]=minio.${INGRESS_EXTERNAL_ADDRESS}"
+EXTRA=""
 install_chart
 
 MINIO_ACCESS_KEY=$(kubectl -n $NAMESPACE get secret minio -o jsonpath="{.data.accesskey}" | base64 --decode)

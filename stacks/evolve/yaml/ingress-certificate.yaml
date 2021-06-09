@@ -1,17 +1,9 @@
 apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
+kind: Issuer
 metadata:
-  name: letsencrypt
+  name: selfsigned
 spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    email: admin@${INGRESS_EXTERNAL_ADDRESS}
-    privateKeySecretRef:
-      name: letsencrypt
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
+  selfSigned: {}
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -22,10 +14,73 @@ spec:
   duration: 87600h
   commonName: ${INGRESS_EXTERNAL_ADDRESS}
   dnsNames:
-  - "${INGRESS_EXTERNAL_ADDRESS}"
+  - ${INGRESS_EXTERNAL_ADDRESS}
+  - crazy-mink.${INGRESS_EXTERNAL_ADDRESS}
+  - competent-tahr.${INGRESS_EXTERNAL_ADDRESS}
+  - xenodochial-mastodon.${INGRESS_EXTERNAL_ADDRESS}
+  - determined-fish.${INGRESS_EXTERNAL_ADDRESS}
+  - exciting-wolf.${INGRESS_EXTERNAL_ADDRESS}
+  - eager-crane.${INGRESS_EXTERNAL_ADDRESS}
+  - epic-snake.${INGRESS_EXTERNAL_ADDRESS}
+  - festive-moose.${INGRESS_EXTERNAL_ADDRESS}
+  - vibrant-cougar.${INGRESS_EXTERNAL_ADDRESS}
+  - zen-swallow.${INGRESS_EXTERNAL_ADDRESS}
+  - amazing-orangutan.${INGRESS_EXTERNAL_ADDRESS}
+  - strange-shark.${INGRESS_EXTERNAL_ADDRESS}
+  - dreamy-duck.${INGRESS_EXTERNAL_ADDRESS}
+  - inspiring-ox.${INGRESS_EXTERNAL_ADDRESS}
+  - dreamy-owl.${INGRESS_EXTERNAL_ADDRESS}
+  - objective-blackbird.${INGRESS_EXTERNAL_ADDRESS}
+  - unruffled-lungfish.${INGRESS_EXTERNAL_ADDRESS}
+  - crazy-anglerfish.${INGRESS_EXTERNAL_ADDRESS}
+  - laughing-pinniped.${INGRESS_EXTERNAL_ADDRESS}
+  - funny-urial.${INGRESS_EXTERNAL_ADDRESS}
+  - competent-locust.${INGRESS_EXTERNAL_ADDRESS}
+  - practical-llama.${INGRESS_EXTERNAL_ADDRESS}
+  - crazy-sturgeon.${INGRESS_EXTERNAL_ADDRESS}
+  - elated-salamander.${INGRESS_EXTERNAL_ADDRESS}
+  - charming-louse.${INGRESS_EXTERNAL_ADDRESS}
+  - peaceful-moose.${INGRESS_EXTERNAL_ADDRESS}
+  - intelligent-lynx.${INGRESS_EXTERNAL_ADDRESS}
+  - practical-flyingfish.${INGRESS_EXTERNAL_ADDRESS}
+  - serene-angelfish.${INGRESS_EXTERNAL_ADDRESS}
+  - gracious-magpie.${INGRESS_EXTERNAL_ADDRESS}
+  - sharp-swallow.${INGRESS_EXTERNAL_ADDRESS}
+  - keen-skink.${INGRESS_EXTERNAL_ADDRESS}
+  - nifty-finch.${INGRESS_EXTERNAL_ADDRESS}
+  - ecstatic-cobra.${INGRESS_EXTERNAL_ADDRESS}
+  - serene-meadowlark.${INGRESS_EXTERNAL_ADDRESS}
+  - peaceful-scorpion.${INGRESS_EXTERNAL_ADDRESS}
+  - reverent-porpoise.${INGRESS_EXTERNAL_ADDRESS}
+  - elegant-rabbit.${INGRESS_EXTERNAL_ADDRESS}
+  - jovial-piranha.${INGRESS_EXTERNAL_ADDRESS}
+  - distracted-wildcat.${INGRESS_EXTERNAL_ADDRESS}
+  - eager-mammal.${INGRESS_EXTERNAL_ADDRESS}
+  - funny-possum.${INGRESS_EXTERNAL_ADDRESS}
+  - affectionate-mite.${INGRESS_EXTERNAL_ADDRESS}
+  - blissful-piranha.${INGRESS_EXTERNAL_ADDRESS}
+  - interesting-salamander.${INGRESS_EXTERNAL_ADDRESS}
+  - inspiring-rodent.${INGRESS_EXTERNAL_ADDRESS}
+  - flamboyant-snake.${INGRESS_EXTERNAL_ADDRESS}
+  - angry-tern.${INGRESS_EXTERNAL_ADDRESS}
+  - upbeat-gerbil.${INGRESS_EXTERNAL_ADDRESS}
+  - exciting-shrew.${INGRESS_EXTERNAL_ADDRESS}
+  - magical-peafowl.${INGRESS_EXTERNAL_ADDRESS}
+  - condescending-dragon.${INGRESS_EXTERNAL_ADDRESS}
+  - nervous-penguin.${INGRESS_EXTERNAL_ADDRESS}
+  - confident-scorpion.${INGRESS_EXTERNAL_ADDRESS}
+  - hardcore-mockingbird.${INGRESS_EXTERNAL_ADDRESS}
+  - vigilant-angelfish.${INGRESS_EXTERNAL_ADDRESS}
+  - intelligent-raven.${INGRESS_EXTERNAL_ADDRESS}
+  - sharp-centipede.${INGRESS_EXTERNAL_ADDRESS}
+  - infallible-mink.${INGRESS_EXTERNAL_ADDRESS}
+  - happy-tapir.${INGRESS_EXTERNAL_ADDRESS}
+  - busy-barnacle.${INGRESS_EXTERNAL_ADDRESS}
+  - gracious-falcon.${INGRESS_EXTERNAL_ADDRESS}
+  - sharp-clam.${INGRESS_EXTERNAL_ADDRESS}
+  - priceless-fish.${INGRESS_EXTERNAL_ADDRESS}
   privateKey:
     algorithm: RSA
     size: 2048
   issuerRef:
-    name: letsencrypt
-    kind: ClusterIssuer
+    name: selfsigned

@@ -1,15 +1,3 @@
-ingress:
-  enabled: true
-  hosts:
-    - registry.local
-  annotations:
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "4096m"
-    cert-manager.io/cluster-issuer: "letsencrypt"
-  tls:
-    - secretName: ssl-certificate
-      hosts:
-        - registry.local
 persistence:
   enabled: true
   deleteEnabled: true
