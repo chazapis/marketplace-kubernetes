@@ -1,11 +1,4 @@
 apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: selfsigned
-spec:
-  selfSigned: {}
----
-apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: ssl-certificate
@@ -15,6 +8,8 @@ spec:
   commonName: ${INGRESS_EXTERNAL_ADDRESS}
   dnsNames:
   - ${INGRESS_EXTERNAL_ADDRESS}
+  - registry.${INGRESS_EXTERNAL_ADDRESS}
+  - minio.${INGRESS_EXTERNAL_ADDRESS}
   - crazy-mink.${INGRESS_EXTERNAL_ADDRESS}
   - competent-tahr.${INGRESS_EXTERNAL_ADDRESS}
   - xenodochial-mastodon.${INGRESS_EXTERNAL_ADDRESS}
@@ -83,4 +78,4 @@ spec:
     algorithm: RSA
     size: 2048
   issuerRef:
-    name: selfsigned
+    name: ${INGRESS_CERTIFICATE_ISSUER}

@@ -69,12 +69,23 @@ EXTRA=""
 install_chart
 
 INGRESS_EXTERNAL_IP=`kubectl get services --namespace $NAMESPACE ingress-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}'`
-INGRESS_EXTERNAL_ADDRESS=${INGRESS_EXTERNAL_IP}.nip.io
+if [ -z "${MP_KUBERNETES}" ]; then
+    INGRESS_EXTERNAL_IP=${INGRESS_EXTERNAL_IP:-"127.0.0.1"}
+fi
+if [ "$INGRESS_EXTERNAL_IP" = "127.0.0.1" ]; then
+    INGRESS_CERTIFICATE_ISSUER=selfsigned
+    INGRESS_EXTERNAL_ADDRESS=localtest.me
+else
+    INGRESS_CERTIFICATE_ISSUER=letsencrypt-staging
+    INGRESS_EXTERNAL_ADDRESS=${INGRESS_EXTERNAL_IP}.nip.io
+fi
 
 if kubectl -n $NAMESPACE get secret ssl-certificate; then
     :
 else
+    export INGRESS_CERTIFICATE_ISSUER
     export INGRESS_EXTERNAL_ADDRESS
+    envsubst < $(get_yaml yaml/ingress-issuer-${INGRESS_CERTIFICATE_ISSUER}.yaml) | kubectl -n $NAMESPACE apply -f -
     envsubst < $(get_yaml yaml/ingress-certificate.yaml) | kubectl -n $NAMESPACE apply -f -
 fi
 
@@ -84,7 +95,29 @@ CHART="twuni/docker-registry"
 CHART_VERSION="1.10.0"
 NAMESPACE="registry"
 VALUES="values/$STACK.yaml"
-EXTRA=""
+EXTRA="--set ingress.hosts[0]=registry.${INGRESS_EXTERNAL_ADDRESS}"
+
+if kubectl -n $NAMESPACE get secret registry-credentials; then
+    :
+else
+    kubectl create namespace $NAMESPACE || true
+    kubectl apply -n $NAMESPACE -f yaml/registry-credentials.yaml
+    kubectl wait --timeout=300s --for=condition=complete job/create-registry-credentials
+fi
+
+REGISTRY_USERNAME=$(kubectl -n $NAMESPACE get secret registry-credentials -o jsonpath="{.data.username}" | base64 --decode)
+REGISTRY_PASSWORD=$(kubectl -n $NAMESPACE get secret registry-credentials -o jsonpath="{.data.password}" | base64 --decode)
+
+if kubectl -n $NAMESPACE get secret registry-htpasswd; then
+    :
+else
+    kubectl create namespace $NAMESPACE || true
+    export REGISTRY_USERNAME
+    export REGISTRY_PASSWORD
+    kubectl apply -n $NAMESPACE -f yaml/registry-htpasswd.yaml
+    kubectl wait --timeout=300s --for=condition=complete job/create-registry-htpasswd
+fi
+
 install_chart
 
 # minio
@@ -93,7 +126,7 @@ CHART="minio/minio"
 CHART_VERSION="8.0.10"
 NAMESPACE="minio"
 VALUES="values/$STACK.yaml"
-EXTRA=""
+EXTRA="--set ingress.hosts[0]=minio.${INGRESS_EXTERNAL_ADDRESS}"
 install_chart
 
 MINIO_ACCESS_KEY=$(kubectl -n $NAMESPACE get secret minio -o jsonpath="{.data.accesskey}" | base64 --decode)
@@ -114,7 +147,7 @@ EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} --set karvd
 if kubectl -n karvdash get pvc karvdash-state-pvc; then
     :
 else
-    kubectl create namespace $NAMESPACE
+    kubectl create namespace $NAMESPACE || true
     kubectl -n $NAMESPACE apply -f $(get_yaml yaml/karvdash-volume.yaml)
 fi
 

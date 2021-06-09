@@ -1,3 +1,9 @@
+ingress:
+  enabled: true
+  hosts:
+    - minio.local
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "4096m"
 persistence:
   size: 10Gi
   storageClass:
