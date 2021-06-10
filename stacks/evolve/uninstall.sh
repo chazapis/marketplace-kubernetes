@@ -10,7 +10,7 @@ uninstall_chart () {
     helm uninstall "$STACK" \
       --namespace "$NAMESPACE" \
       || true
-	kubectl delete namespace $NAMESPACE
+    kubectl delete namespace $NAMESPACE || true
 }
 
 # karvdash

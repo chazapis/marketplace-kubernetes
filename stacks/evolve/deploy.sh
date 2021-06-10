@@ -33,6 +33,7 @@ get_yaml () {
 install_chart () {
     helm upgrade "$STACK" "$CHART" \
       --atomic \
+      --timeout 15m0s \
       --create-namespace \
       --install \
       --namespace "$NAMESPACE" \
@@ -92,6 +93,7 @@ if kubectl -n $NAMESPACE get secret registry-credentials; then
     :
 else
     kubectl create namespace $NAMESPACE || true
+    kubectl apply -n $NAMESPACE -f yaml/registry-rbac.yaml
     kubectl apply -n $NAMESPACE -f yaml/registry-credentials.yaml
     kubectl wait -n $NAMESPACE --timeout=300s --for=condition=complete job/create-registry-credentials
 fi
@@ -102,6 +104,7 @@ if kubectl -n $NAMESPACE get secret registry-htpasswd; then
     :
 else
     kubectl create namespace $NAMESPACE || true
+    kubectl apply -n $NAMESPACE -f yaml/registry-rbac.yaml
     export NAMESPACE
     export REGISTRY_USERNAME
     export REGISTRY_PASSWORD
@@ -133,7 +136,7 @@ kubectl wait --timeout=600s --for=condition=ready pods -l app.kubernetes.io/name
 # karvdash
 STACK="karvdash"
 CHART="karvdash/karvdash"
-CHART_VERSION="2.4"
+CHART_VERSION="2.4.0"
 NAMESPACE="karvdash"
 VALUES="values/$STACK.yaml"
 EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} --set karvdash.dockerRegistry=https://${REGISTRY_USERNAME}:${REGISTRY_PASSWORD}@registry.${INGRESS_EXTERNAL_ADDRESS}:443 --set karvdash.filesURL=minios://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio.${INGRESS_EXTERNAL_ADDRESS}:443/karvdash"
