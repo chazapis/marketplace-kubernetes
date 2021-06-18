@@ -17,6 +17,13 @@ uninstall_chart () {
 # karvdash
 STACK="karvdash"
 NAMESPACE="karvdash"
+
+for i in `kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'`; do
+    if echo $i | grep "karvdash-" > /dev/null; then
+        kubectl delete ns $i # clean up user namespaces
+    fi
+done
+
 uninstall_chart
 
 # datashim
