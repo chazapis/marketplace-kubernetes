@@ -1,7 +1,6 @@
 karvdash:
   stateVolumeClaim: karvdash-state-pvc
   ingressURL: http://karvdash.local
-  dockerRegistry: http://registry.local:5000
   datasetsAvailable: 1
   filesURL: minio://minio.local:9000
   disabledServiceTemplates:

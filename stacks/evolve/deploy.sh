@@ -6,7 +6,6 @@ set -e
 ################################################################################
 # repo
 ################################################################################
-helm repo add twuni https://helm.twun.io
 helm repo add jetstack https://charts.jetstack.io
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo add minio https://helm.min.io
@@ -65,11 +64,10 @@ INGRESS_EXTERNAL_IP=`kubectl get services --namespace $NAMESPACE ingress-ingress
 if [ -z "${MP_KUBERNETES}" ]; then
     INGRESS_EXTERNAL_IP=${INGRESS_EXTERNAL_IP:-"127.0.0.1"}
 fi
+INGRESS_CERTIFICATE_ISSUER=selfsigned
 if [ "$INGRESS_EXTERNAL_IP" = "127.0.0.1" ]; then
-    INGRESS_CERTIFICATE_ISSUER=selfsigned
     INGRESS_EXTERNAL_ADDRESS=localtest.me
 else
-    INGRESS_CERTIFICATE_ISSUER=letsencrypt-staging
     INGRESS_EXTERNAL_ADDRESS=${INGRESS_EXTERNAL_IP}.nip.io
 fi
 
@@ -81,41 +79,6 @@ else
     envsubst < $(get_yaml yaml/ingress-issuer-${INGRESS_CERTIFICATE_ISSUER}.yaml) | kubectl -n $NAMESPACE apply -f -
     envsubst < $(get_yaml yaml/ingress-certificate.yaml) | kubectl -n $NAMESPACE apply -f -
 fi
-
-# registry
-STACK="registry"
-CHART="twuni/docker-registry"
-CHART_VERSION="1.10.0"
-NAMESPACE="registry"
-VALUES="values/$STACK.yaml"
-
-if kubectl -n $NAMESPACE get secret registry-credentials; then
-    :
-else
-    kubectl create namespace $NAMESPACE || true
-    kubectl apply -n $NAMESPACE -f yaml/registry-rbac.yaml
-    kubectl apply -n $NAMESPACE -f yaml/registry-credentials.yaml
-    kubectl wait -n $NAMESPACE --timeout=300s --for=condition=complete job/create-registry-credentials
-fi
-REGISTRY_USERNAME=$(kubectl -n $NAMESPACE get secret registry-credentials -o jsonpath="{.data.username}" | base64 --decode)
-REGISTRY_PASSWORD=$(kubectl -n $NAMESPACE get secret registry-credentials -o jsonpath="{.data.password}" | base64 --decode)
-
-if kubectl -n $NAMESPACE get secret registry-htpasswd; then
-    :
-else
-    kubectl create namespace $NAMESPACE || true
-    kubectl apply -n $NAMESPACE -f yaml/registry-rbac.yaml
-    export NAMESPACE
-    export REGISTRY_USERNAME
-    export REGISTRY_PASSWORD
-    envsubst < $(get_yaml yaml/registry-htpasswd.yaml) | kubectl -n $NAMESPACE apply -f -
-    kubectl wait -n $NAMESPACE --timeout=300s --for=condition=complete job/create-registry-htpasswd
-fi
-REGISTRY_HTPASSWD=$(kubectl -n $NAMESPACE get secret registry-htpasswd -o jsonpath="{.data.auth}" | base64 --decode)
-
-EXTRA="--set ingress.hosts[0]=registry.${INGRESS_EXTERNAL_ADDRESS} --set-string secrets.htpasswd=${REGISTRY_HTPASSWD}"
-
-install_chart
 
 # minio
 STACK="minio"
@@ -139,7 +102,7 @@ CHART="karvdash/karvdash"
 CHART_VERSION="2.4.0"
 NAMESPACE="karvdash"
 VALUES="values/$STACK.yaml"
-EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} --set karvdash.dockerRegistry=https://${REGISTRY_USERNAME}:${REGISTRY_PASSWORD}@registry.${INGRESS_EXTERNAL_ADDRESS}:443 --set karvdash.filesURL=minios://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio.${INGRESS_EXTERNAL_ADDRESS}:443/karvdash"
+EXTRA="--set image=karvdash:v2.4.1b1 --set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} --set karvdash.filesURL=minios://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio.${INGRESS_EXTERNAL_ADDRESS}:443/karvdash"
 
 if kubectl -n karvdash get pvc karvdash-state-pvc; then
     :

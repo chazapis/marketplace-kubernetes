@@ -8,7 +8,6 @@ spec:
   commonName: ${INGRESS_EXTERNAL_ADDRESS}
   dnsNames:
   - ${INGRESS_EXTERNAL_ADDRESS}
-  - registry.${INGRESS_EXTERNAL_ADDRESS}
   - minio.${INGRESS_EXTERNAL_ADDRESS}
   - crazy-mink.${INGRESS_EXTERNAL_ADDRESS}
   - competent-tahr.${INGRESS_EXTERNAL_ADDRESS}

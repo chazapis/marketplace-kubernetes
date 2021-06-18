@@ -1,9 +1,0 @@
-ingress:
-  enabled: true
-  hosts:
-    - registry.local
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "4096m"
-persistence:
-  enabled: true
-  deleteEnabled: true

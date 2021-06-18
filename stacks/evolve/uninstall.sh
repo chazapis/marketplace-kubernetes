@@ -26,11 +26,6 @@ STACK="minio"
 NAMESPACE="minio"
 uninstall_chart
 
-# registry
-STACK="registry"
-NAMESPACE="registry"
-uninstall_chart
-
 # ingress
 STACK="ingress"
 NAMESPACE="ingress-nginx"
