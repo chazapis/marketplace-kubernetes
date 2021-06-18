@@ -99,10 +99,10 @@ kubectl wait --timeout=600s --for=condition=ready pods -l app.kubernetes.io/name
 # karvdash
 STACK="karvdash"
 CHART="karvdash/karvdash"
-CHART_VERSION="2.4.0"
+CHART_VERSION="2.4.1"
 NAMESPACE="karvdash"
 VALUES="values/$STACK.yaml"
-EXTRA="--set image=karvdash:v2.4.1b1 --set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} --set karvdash.filesURL=minios://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio.${INGRESS_EXTERNAL_ADDRESS}:443/karvdash"
+EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} --set karvdash.filesURL=minio://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio.minio.svc:9000/karvdash"
 
 if kubectl -n karvdash get pvc karvdash-state-pvc; then
     :

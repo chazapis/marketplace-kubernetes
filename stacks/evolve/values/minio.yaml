@@ -3,6 +3,7 @@ ingress:
   hosts:
     - minio.local
   annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: "4096m"
 persistence:
   size: 10Gi
