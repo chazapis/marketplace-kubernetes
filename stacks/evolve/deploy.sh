@@ -8,7 +8,7 @@ set -e
 ################################################################################
 helm repo add jetstack https://charts.jetstack.io
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo add minio https://helm.min.io
+helm repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
 helm repo add karvdash https://carv-ics-forth.github.io/karvdash/chart
 helm repo update > /dev/null
 
@@ -80,21 +80,20 @@ else
     envsubst < $(get_yaml yaml/ingress-certificate.yaml) | kubectl -n $NAMESPACE apply -f -
 fi
 
-# minio
-STACK="minio"
-CHART="minio/minio"
-CHART_VERSION="8.0.10"
-NAMESPACE="minio"
+# csi-nfs
+STACK="csi-driver-nfs"
+CHART="csi-driver-nfs/csi-driver-nfs"
+CHART_VERSION="v3.0.0"
+NAMESPACE="csi-nfs"
 VALUES="values/$STACK.yaml"
-EXTRA="--set ingress.hosts[0]=minio.${INGRESS_EXTERNAL_ADDRESS}"
+EXTRA=""
 install_chart
 
-MINIO_ACCESS_KEY=$(kubectl -n $NAMESPACE get secret minio -o jsonpath="{.data.accesskey}" | base64 --decode)
-MINIO_SECRET_KEY=$(kubectl -n $NAMESPACE get secret minio -o jsonpath="{.data.secretkey}" | base64 --decode)
-
 # datashim
-kubectl apply -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml
-kubectl wait --timeout=600s --for=condition=ready pods -l app.kubernetes.io/name=dlf -n dlf
+# kubectl apply -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml
+# kubectl wait --timeout=600s --for=condition=ready pods -l app.kubernetes.io/name=dlf -n dlf
+
+exit 0
 
 # karvdash
 STACK="karvdash"

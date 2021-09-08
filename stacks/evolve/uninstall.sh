@@ -27,11 +27,11 @@ done
 uninstall_chart
 
 # datashim
-kubectl delete -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml || true
+# kubectl delete -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml || true
 
-# minio
-STACK="minio"
-NAMESPACE="minio"
+# csi-nfs
+STACK="csi-driver-nfs"
+NAMESPACE="csi-nfs"
 uninstall_chart
 
 # ingress
