@@ -9,7 +9,7 @@ set -e
 
 uninstall_chart () {
     helm uninstall "$STACK" --namespace "$NAMESPACE" || true
-    if [ $NAMESPACE -ne "default" ]; then
+    if [ $NAMESPACE != "default" ]; then
         kubectl delete namespace $NAMESPACE || true
     fi
 }
@@ -26,7 +26,7 @@ uninstall_chart
 
 # Karvdash
 STACK="karvdash"
-NAMESPACE="karvdash"
+NAMESPACE="default"
 
 for i in `kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'`; do
     if echo $i | grep "^karvdash-" > /dev/null; then
@@ -43,7 +43,7 @@ uninstall_chart
 
 # NFS server
 NAMESPACE="nfs"
-kubectl delete ns $NAMESPACE
+kubectl delete ns $NAMESPACE || true
 
 # Datashim
 # kubectl delete -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml || true
