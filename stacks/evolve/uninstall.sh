@@ -8,10 +8,10 @@ set -e
 ################################################################################
 
 uninstall_chart () {
-    helm uninstall "$STACK" \
-      --namespace "$NAMESPACE" \
-      || true
-    kubectl delete namespace $NAMESPACE || true
+    helm uninstall "$STACK" --namespace "$NAMESPACE" || true
+    if [ $NAMESPACE -ne "default" ]; then
+        kubectl delete namespace $NAMESPACE || true
+    fi
 }
 
 # karvdash
@@ -25,6 +25,10 @@ for i in `kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'`; do
 done
 
 uninstall_chart
+
+# nfs-server
+NAMESPACE="nfs"
+kubectl delete ns $NAMESPACE
 
 # datashim
 # kubectl delete -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml || true

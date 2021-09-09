@@ -60,7 +60,7 @@ VALUES="values/$STACK.yaml"
 EXTRA=""
 install_chart
 
-INGRESS_EXTERNAL_IP=`kubectl get services --namespace $NAMESPACE ingress-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+INGRESS_EXTERNAL_IP=`kubectl -n $NAMESPACE get services ingress-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}'`
 if [ -z "${MP_KUBERNETES}" ]; then
     INGRESS_EXTERNAL_IP=${INGRESS_EXTERNAL_IP:-"127.0.0.1"}
 fi
@@ -93,17 +93,25 @@ install_chart
 # kubectl apply -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml
 # kubectl wait --timeout=600s --for=condition=ready pods -l app.kubernetes.io/name=dlf -n dlf
 
-exit 0
+# nfs-server
+NAMESPACE="nfs"
+
+if kubectl -n $NAMESPACE get service nfs-server; then
+    :
+else
+    kubectl create namespace $NAMESPACE || true
+    kubectl -n $NAMESPACE apply -f $(get_yaml yaml/nfs-service.yaml)
+fi
 
 # karvdash
 STACK="karvdash"
 CHART="karvdash/karvdash"
-CHART_VERSION="2.4.1"
-NAMESPACE="karvdash"
+CHART_VERSION="3.0.0"
+NAMESPACE="default"
 VALUES="values/$STACK.yaml"
-EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} --set karvdash.filesURL=minio://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio.minio.svc:9000/karvdash"
+EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} --set karvdash.filesURL=nfs://nfs-server.nfs.svc/exports"
 
-if kubectl -n karvdash get pvc karvdash-state-pvc; then
+if kubectl -n $NAMESPACE get pvc karvdash-state-pvc; then
     :
 else
     kubectl create namespace $NAMESPACE || true

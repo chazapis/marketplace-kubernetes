@@ -1,12 +1,5 @@
 karvdash:
   stateVolumeClaim: karvdash-state-pvc
-  ingressURL: http://karvdash.local
-  datasetsAvailable: 1
-  filesURL: minio://minio.local:9000
-  disabledServiceTemplates:
-  - argo-metrics.template.yaml
-  - jupyter-gpu.template.yaml
-  - zeppelin-gpu.template.yaml
   disabledDatasetTemplates:
   - s3-local
   - h3-local
