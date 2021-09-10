@@ -18,10 +18,17 @@ hub:
       c.KubeSpawner.enable_user_namespaces = True
       c.KubeSpawner.user_namespace_template = "karvdash-{username}"
       c.KubeSpawner.notebook_dir = "/private/notebooks"
+  networkPolicy:
+    enabled: false
 proxy:
   service:
     type: ClusterIP
+  chp:
+    networkPolicy:
+      enabled: false
 singleuser:
+  networkPolicy:
+    enabled: false
   storage:
     type: none
 prePuller:
