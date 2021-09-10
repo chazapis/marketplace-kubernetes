@@ -14,7 +14,7 @@ helm repo update > /dev/null
 ################################################################################
 STACK="redpanda"
 CHART="vectorized/redpanda-operator"
-CHART_VERSION="v21.5.5"
+CHART_VERSION="v21.8.1"
 NAMESPACE="redpanda-system"
 
 if [ -z "${MP_KUBERNETES}" ]; then
@@ -48,12 +48,6 @@ helm upgrade "$STACK" "$CHART" \
 MAX=50
 CURRENT=0
 
-until $(kubectl apply -f "https://raw.githubusercontent.com/vectorizedio/redpanda/$CHART_VERSION/src/go/k8s/config/samples/external_connectivity.yaml" >/dev/null 2>&1); do
-  CURRENT=$((CURRENT + 1))
-  sleep 1
-
-  if [ "$CURRENT" -gt "$MAX" ]; then
-    echo "FAILED: Webhook not ready, giving up."
-    exit 1
-  fi
-done
+kubectl wait pod -l app.kubernetes.io/instance=redpanda -n $NAMESPACE --timeout=10m --for condition=ready
+kubectl config set-context --current --namespace default
+kubectl apply -f "https://raw.githubusercontent.com/vectorizedio/redpanda/$CHART_VERSION/src/go/k8s/config/samples/external_connectivity.yaml"
