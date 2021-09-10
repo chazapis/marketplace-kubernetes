@@ -24,19 +24,21 @@ STACK="jupyterhub"
 NAMESPACE="jupyterhub"
 uninstall_chart
 
+kubectl delete clusterrolebinding jupyterhub-cluster-admin
+
 # Karvdash
 STACK="karvdash"
-NAMESPACE="default"
+NAMESPACE="karvdash"
 
 for i in `kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'`; do
     if echo $i | grep "^karvdash-" > /dev/null; then
         kubectl delete ns $i # clean up user namespaces
+        for j in `kubectl get pv -o jsonpath='{.items[*].metadata.name}'`; do
+            if echo $j | grep "^$i" > /dev/null; then
+                kubectl delete pv $j # clean up user persistent volumes
+            fi
+        done
     fi
-    for j in `kubectl get pv -o jsonpath='{.items[*].metadata.name}'`; do
-        if echo $j | grep "^$i" > /dev/null; then
-            kubectl delete pv $j # clean up user persistent volumes
-        fi
-    done
 done
 
 uninstall_chart

@@ -65,7 +65,7 @@ EXTRA=""
 install_chart
 
 INGRESS_EXTERNAL_IP=`kubectl -n $NAMESPACE get services ingress-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}'`
-if [ -z "${MP_KUBERNETES}" ] || [ -z "${INGRESS_EXTERNAL_IP}" ]; then
+if [ -z "${INGRESS_EXTERNAL_IP}" ]; then
     # use local IP for testing on Docker Desktop
     INGRESS_EXTERNAL_IP=$(ipconfig getifaddr en0 || ipconfig getifaddr en1)
 fi
@@ -106,8 +106,8 @@ fi
 # Karvdash
 STACK="karvdash"
 CHART="karvdash/karvdash"
-CHART_VERSION="3.0.0"
-NAMESPACE="default"
+CHART_VERSION="3.0.1"
+NAMESPACE="karvdash"
 EXTRA="--set karvdash.ingressURL=https://${INGRESS_EXTERNAL_ADDRESS} \
        --set karvdash.filesURL=nfs://nfs-server.nfs.svc/exports \
        --set karvdash.jupyterHubURL=https://jupyterhub.${INGRESS_EXTERNAL_ADDRESS} \
@@ -131,8 +131,8 @@ install_chart
 # JupyterHub
 NAMESPACE=$JUPYTERHUB_NAMESPACE
 
-JUPYTERHUB_CLIENT_ID=$(kubectl -n $NAMESPACE get secret karvdash-oauth-jupyterhub --output jsonpath='{.data.client-id}' | base64 -d)
-JUPYTERHUB_CLIENT_SECRET=$(kubectl -n $NAMESPACE get secret karvdash-oauth-jupyterhub --output jsonpath='{.data.client-secret}' | base64 -d)
+JUPYTERHUB_CLIENT_ID=$(kubectl -n $NAMESPACE get secret karvdash-oauth-jupyterhub -o 'go-template={{index .data "client-id" | base64decode }}')
+JUPYTERHUB_CLIENT_SECRET=$(kubectl -n $NAMESPACE get secret karvdash-oauth-jupyterhub -o 'go-template={{index .data "client-secret" | base64decode }}')
 
 STACK="jupyterhub"
 CHART="jupyterhub/jupyterhub"
@@ -145,6 +145,8 @@ EXTRA="--set hub.config.GenericOAuthenticator.client_id=${JUPYTERHUB_CLIENT_ID} 
        --set hub.config.GenericOAuthenticator.userdata_url=https://${INGRESS_EXTERNAL_ADDRESS}/oauth/userinfo/ \
        --set ingress.hosts[0]=jupyterhub.${INGRESS_EXTERNAL_ADDRESS}"
 install_chart
+
+kubectl create clusterrolebinding jupyterhub-cluster-admin --clusterrole=cluster-admin --serviceaccount=$NAMESPACE:hub
 
 # Argo Workflows
 STACK="argo"
