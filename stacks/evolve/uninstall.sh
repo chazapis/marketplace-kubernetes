@@ -7,6 +7,19 @@ set -e
 # charts
 ################################################################################
 
+get_yaml () {
+    local yaml
+    if [ -z "${MP_KUBERNETES}" ]; then
+        # use local version
+        ROOT_DIR=$(git rev-parse --show-toplevel)
+        yaml="$ROOT_DIR/stacks/evolve/$1"
+    else
+        # use github hosted master version
+        yaml="https://raw.githubusercontent.com/digitalocean/marketplace-kubernetes/master/stacks/evolve/$1"
+    fi
+    echo "$yaml"
+}
+
 uninstall_chart () {
     helm uninstall "$STACK" --namespace "$NAMESPACE" || true
     if [ $NAMESPACE != "default" ]; then
@@ -48,7 +61,7 @@ NAMESPACE="nfs"
 kubectl delete ns $NAMESPACE || true
 
 # Datashim
-# kubectl delete -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml || true
+kubectl delete -f $(get_yaml yaml/dlf-custom.yaml) || true
 
 # NFS CSI Driver
 STACK="csi-driver-nfs"

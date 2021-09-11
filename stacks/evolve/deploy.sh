@@ -97,8 +97,8 @@ EXTRA=""
 install_chart
 
 # Datashim
-# kubectl apply -f https://raw.githubusercontent.com/datashim-io/datashim/master/release-tools/manifests/dlf.yaml
-# kubectl wait --timeout=600s --for=condition=ready pods -l app.kubernetes.io/name=dlf -n dlf
+kubectl apply -f $(get_yaml yaml/dlf-custom.yaml) # built from 079b99e with "--set csi-nfs-chart.enabled='false'" in HELM_IMAGE_TAGS
+kubectl wait --timeout=600s --for=condition=ready pods -l app.kubernetes.io/name=dlf -n dlf
 
 # NFS server
 NAMESPACE="nfs"
