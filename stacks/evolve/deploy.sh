@@ -54,7 +54,6 @@ CHART_VERSION="v1.1.0"
 NAMESPACE="cert-manager"
 EXTRA=""
 install_chart
-sleep 5 # wait for startup
 
 # NGINX Ingress Controller
 STACK="ingress"
@@ -70,15 +69,23 @@ if [ -z "${INGRESS_EXTERNAL_IP}" ]; then
     INGRESS_EXTERNAL_IP=$(ipconfig getifaddr en0 || ipconfig getifaddr en1)
 fi
 INGRESS_EXTERNAL_ADDRESS=${INGRESS_EXTERNAL_IP}.nip.io
-INGRESS_CERTIFICATE_ISSUER=selfsigned
 
 if kubectl -n $NAMESPACE get secret ssl-certificate; then
     :
 else
-    export INGRESS_CERTIFICATE_ISSUER
     export INGRESS_EXTERNAL_ADDRESS
-    envsubst < $(get_yaml yaml/ingress-issuer-${INGRESS_CERTIFICATE_ISSUER}.yaml) | kubectl -n $NAMESPACE apply -f -
-    envsubst < $(get_yaml yaml/ingress-certificate.yaml) | kubectl -n $NAMESPACE apply -f -
+
+    # retry until ready (https://github.com/jetstack/cert-manager/issues/2908)
+    max_attempts=5
+    for i in $(seq 1 $max_attempts); do
+        envsubst < $(get_yaml yaml/ingress-certificate.yaml) | kubectl -n $NAMESPACE apply -f - && break
+        echo "WARNING: The cert-manager webhook is not ready... Retrying in 5 seconds... (attempt $i/$max_attempts)"
+        sleep 5
+    done
+    if [ $i == $max_attempts ]; then
+        echo "ERROR: The cert-manager webhook failed to initialize after $max_attempts attempts."
+        exit 1;
+    fi
 fi
 
 # NFS CSI Driver

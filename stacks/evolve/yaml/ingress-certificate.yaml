@@ -13,4 +13,11 @@ spec:
     algorithm: RSA
     size: 2048
   issuerRef:
-    name: ${INGRESS_CERTIFICATE_ISSUER}
+    name: selfsigned
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned
+spec:
+  selfSigned: {}
