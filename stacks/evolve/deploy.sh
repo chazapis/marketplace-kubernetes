@@ -82,7 +82,7 @@ else
         echo "WARNING: The cert-manager webhook is not ready... Retrying in 5 seconds... (attempt $i/$max_attempts)"
         sleep 5
     done
-    if [ $i == $max_attempts ]; then
+    if [ $i = $max_attempts ]; then
         echo "ERROR: The cert-manager webhook failed to initialize after $max_attempts attempts."
         exit 1;
     fi
@@ -96,10 +96,6 @@ NAMESPACE="csi-nfs"
 EXTRA=""
 install_chart
 
-# Datashim
-kubectl apply -f $(get_yaml yaml/dlf-custom.yaml) # built from 079b99e with "--set csi-nfs-chart.enabled='false'" in HELM_IMAGE_TAGS
-kubectl wait --timeout=600s --for=condition=ready pods -l app.kubernetes.io/name=dlf -n dlf
-
 # NFS server
 NAMESPACE="nfs"
 
@@ -109,6 +105,10 @@ else
     kubectl create namespace $NAMESPACE || true
     kubectl -n $NAMESPACE apply -f $(get_yaml yaml/nfs-service.yaml)
 fi
+
+# Datashim
+kubectl apply -f $(get_yaml yaml/dlf-custom.yaml) # built from 079b99e with "--set csi-nfs-chart.enabled='false'" in HELM_IMAGE_TAGS
+kubectl wait --timeout=600s --for=condition=ready pods -l app.kubernetes.io/name=dlf -n dlf
 
 # Karvdash
 STACK="karvdash"

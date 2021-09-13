@@ -49,6 +49,10 @@ for i in `kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'`; do
         for j in `kubectl get pv -o jsonpath='{.items[*].metadata.name}'`; do
             if echo $j | grep "^$i" > /dev/null; then
                 kubectl delete pv $j # clean up user persistent volumes
+                continue
+            fi
+            if [ "`kubectl get pv $j -o jsonpath='{.spec.claimRef.namespace}'`" = "$i" ]; then
+                kubectl delete pv $j # clean up dataset persistent volumes
             fi
         done
     fi
@@ -56,12 +60,12 @@ done
 
 uninstall_chart
 
+# Datashim
+kubectl delete -f $(get_yaml yaml/dlf-custom.yaml) || true
+
 # NFS server
 NAMESPACE="nfs"
 kubectl delete ns $NAMESPACE || true
-
-# Datashim
-kubectl delete -f $(get_yaml yaml/dlf-custom.yaml) || true
 
 # NFS CSI Driver
 STACK="csi-driver-nfs"
