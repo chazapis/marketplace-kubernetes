@@ -12,10 +12,10 @@ get_yaml () {
     if [ -z "${MP_KUBERNETES}" ]; then
         # use local version
         ROOT_DIR=$(git rev-parse --show-toplevel)
-        yaml="$ROOT_DIR/stacks/evolve/$1"
+        yaml="$ROOT_DIR/stacks/karvdash/$1"
     else
         # use github hosted master version
-        yaml="https://raw.githubusercontent.com/digitalocean/marketplace-kubernetes/master/stacks/evolve/$1"
+        yaml="https://raw.githubusercontent.com/digitalocean/marketplace-kubernetes/master/stacks/karvdash/$1"
     fi
     echo "$yaml"
 }
